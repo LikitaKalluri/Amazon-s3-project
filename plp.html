@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aurora Apparel - Shop</title>
+<link rel="stylesheet" href="styles.css">
+<script>
+  window.adobeDataLayer = window.adobeDataLayer || [];
+  window.adobeDataLayer.push({
+    event:"productImpression",
+    eventInfo:{eventName:"productImpression"},
+    page:{language:"en", pageName:"PLP", pageType:"plp", url:window.location.href},
+    productList: [
+      {productId:"1", productName:"Classic Denim Jacket", productCategory:"Jackets", brand:"Aurora", price:2499, position:1},
+      {productId:"2", productName:"Casual White Shirt", productCategory:"Shirts", brand:"Aurora", price:1299, position:2},
+      {productId:"3", productName:"Summer Floral Dress", productCategory:"Dresses", brand:"Aurora", price:1999, position:3},
+      {productId:"4", productName:"Formal Blazer", productCategory:"Blazers", brand:"Aurora", price:3999, position:4},
+      {productId:"5", productName:"Black Skinny Jeans", productCategory:"Jeans", brand:"Aurora", price:1799, position:5},
+      {productId:"6", productName:"Red Evening Gown", productCategory:"Dresses", brand:"Aurora", price:4999, position:6}
+    ],
+    timestamp:new Date().toISOString()
+  });
+</script>
+<script src="https://assets.adobedtm.com/21b53c73144b/6c72dc7f0f89/launch-3a899434ad9d-development.min.js" async></script>
+</head>
+<body>
+<nav>
+  <h2>Aurora Apparel</h2>
+  <div>
+    <a href="index.html">Home</a>
+    <a href="plp.html">Shop</a>
+    <a href="cart.html">Cart <span id="cartCount" class="cart-badge" style="background:#ff4081;border-radius:50%;padding:2px 6px;font-size:12px;margin-left:5px;display:none;">0</span></a>
+  </div>
+</nav>
+
+<div class="container">
+  <h2>All Products</h2>
+  <div class="products" id="productGrid"></div>
+</div>
+
+<script src="client.js"></script>
+<script>
+  // Initialize cart to show count badge
+  initCart();
+  
+  // Display all products with proper image error handling
+  const grid = document.getElementById('productGrid');
+  products.forEach((p, index)=>{
+    const div = document.createElement('div');
+    div.className="product";
+    
+    // Create image element with proper dimensions and error handling
+    const img = document.createElement('img');
+    img.alt = p.name;
+    img.loading = "lazy";
+    img.width = 220;
+    img.height = 250;
+    img.style.display = 'block';
+    img.style.width = '100%';
+    img.style.height = '250px';
+    img.style.objectFit = 'cover';
+    img.style.backgroundColor = '#f0f0f0';
+    
+    let imageLoaded = false;
+    
+    // Image loaded successfully - show it
+    img.onload = function() {
+      imageLoaded = true;
+      this.style.opacity = '1';
+    };
+    
+    // Image failed to load - use fallback
+    img.onerror = function() {
+      if (!imageLoaded) {
+        this.src = 'https://via.placeholder.com/220x250/cccccc/666666?text=' + encodeURIComponent(p.name.substring(0, 20));
+        imageLoaded = true;
+        this.style.opacity = '1';
+      }
+    };
+    
+    // Set initial state for fade-in
+    img.style.opacity = '0';
+    img.style.transition = 'opacity 0.3s ease-in';
+    
+    // Start loading the image
+    img.src = p.image;
+    
+    // Check if image is already cached/loaded
+    if (img.complete && img.naturalHeight !== 0) {
+      img.style.opacity = '1';
+      imageLoaded = true;
+    }
+    
+    // Set up click handler for product image
+    img.onclick = ()=>{
+      // Push product click event to Adobe Data Layer
+      if (window.adobeDataLayer) {
+        window.adobeDataLayer.push({
+          event:"productClick",
+          eventInfo:{eventName:"productClick"},
+          product:[{
+            productId:p.id, 
+            productName:p.name, 
+            productCategory:p.category, 
+            brand:p.brand, 
+            price:p.price, 
+            position:index + 1
+          }],
+          page:{pageName:"PLP", pageType:"plp", url:window.location.href},
+          timestamp:new Date().toISOString()
+        });
+      }
+      window.location.href = "pdp.html?id="+p.id;
+    };
+    
+    div.innerHTML = `<h3>${p.name}</h3><p>₹${p.price}</p><button onclick="addToCart(products.find(x=>x.id=='${p.id}'))">Add to Cart</button>`;
+    div.insertBefore(img, div.firstChild);
+    
+    grid.appendChild(div);
+  });
+</script>
+<script src="adl-utils.js"></script>
+</body>
+</html>

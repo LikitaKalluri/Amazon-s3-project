@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aurora Apparel - Checkout</title>
+<link rel="stylesheet" href="styles.css">
+<script>
+  window.adobeDataLayer = window.adobeDataLayer || [];
+  
+  // Load cart data for checkout event
+  let checkoutCart = [];
+  try {
+    const savedCart = localStorage.getItem('cart');
+    checkoutCart = savedCart ? JSON.parse(savedCart) : [];
+  } catch (e) {
+    console.error('Error loading cart for checkout:', e);
+    checkoutCart = [];
+  }
+  
+  // Push checkout event to Adobe Data Layer
+  window.adobeDataLayer.push({
+    event:"scCheckout",
+    eventInfo:{eventName:"scCheckout"},
+    page:{pageName:"Checkout", pageType:"checkout", url:window.location.href},
+    cart:{
+      items: checkoutCart.map(item => ({
+        productId: item.id,
+        productName: item.name,
+        productCategory: item.category,
+        brand: item.brand,
+        price: item.price,
+        quantity: item.qty
+      })),
+      total: checkoutCart.reduce((total, item) => total + (item.price * item.qty), 0)
+    },
+    timestamp:new Date().toISOString()
+  });
+</script>
+<script src="https://assets.adobedtm.com/21b53c73144b/6c72dc7f0f89/launch-3a899434ad9d-development.min.js" async></script>
+</head>
+<body>
+<nav>
+  <h2>Aurora Apparel</h2>
+  <div>
+    <a href="index.html">Home</a>
+    <a href="plp.html">Shop</a>
+    <a href="cart.html">Cart <span id="cartCount" class="cart-badge" style="background:#ff4081;border-radius:50%;padding:2px 6px;font-size:12px;margin-left:5px;display:none;">0</span></a>
+  </div>
+</nav>
+
+<div class="container">
+  <h2>Checkout</h2>
+  <form onsubmit="event.preventDefault(); checkout();">
+    <input type="text" placeholder="Full Name" required>
+    <input type="email" placeholder="Email" required>
+    <input type="text" placeholder="Address" required>
+    <button type="submit">Place Order</button>
+  </form>
+</div>
+
+<script src="client.js"></script>
+<script src="adl-utils.js"></script>
+<script>
+// Initialize cart to show count badge
+initCart();
+
+// Redirect to cart if cart is empty
+if (cart.length === 0) {
+  alert('Your cart is empty!');
+  window.location.href = 'cart.html';
+}
+</script>
+</body>
+</html>

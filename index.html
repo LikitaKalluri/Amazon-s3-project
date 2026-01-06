@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aurora Apparel - Home</title>
+<link rel="stylesheet" href="styles.css">
+<script>
+  window.adobeDataLayer = window.adobeDataLayer || [];
+  window.adobeDataLayer.push({
+    event:"pageView",
+    eventInfo:{eventName:"pageView"},
+    page:{language:"en", pageName:"Home", pageType:"home", url:window.location.href},
+    timestamp:new Date().toISOString()
+  });
+</script>
+<script src="https://assets.adobedtm.com/21b53c73144b/6c72dc7f0f89/launch-3a899434ad9d-development.min.js" async></script>
+</head>
+<body>
+<nav>
+  <h2>Aurora Apparel</h2>
+  <div>
+    <a href="index.html">Home</a>
+    <a href="plp.html">Shop</a>
+    <a href="cart.html">Cart <span id="cartCount" class="cart-badge" style="background:#ff4081;border-radius:50%;padding:2px 6px;font-size:12px;margin-left:5px;display:none;">0</span></a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div>
+    <h1>Welcome to Aurora Apparel</h1>
+    <p>Modern, Stylish, Affordable</p>
+    <button onclick="location.href='plp.html'">Shop Now</button>
+  </div>
+</div>
+
+<div class="container">
+  <h2>Featured Products</h2>
+  <div class="products" id="featuredProducts">
+  </div>
+</div>
+
+<script src="client.js"></script>
+<script>
+  // Initialize cart to show count badge
+  initCart();
+  
+  // Display featured products with proper image error handling
+  const container = document.getElementById('featuredProducts');
+  products.slice(0,4).forEach(p=>{
+    const div = document.createElement('div');
+    div.className="product";
+    
+    // Create image element with proper dimensions and error handling
+    const img = document.createElement('img');
+    img.alt = p.name;
+    img.loading = "lazy";
+    img.width = 220;
+    img.height = 250;
+    img.style.display = 'block';
+    img.style.width = '100%';
+    img.style.height = '250px';
+    img.style.objectFit = 'cover';
+    img.style.backgroundColor = '#f0f0f0';
+    
+    let imageLoaded = false;
+    
+    // Image loaded successfully - show it
+    img.onload = function() {
+      imageLoaded = true;
+      this.style.opacity = '1';
+    };
+    
+    // Image failed to load - use fallback
+    img.onerror = function() {
+      if (!imageLoaded) {
+        this.src = 'https://via.placeholder.com/220x250/cccccc/666666?text=' + encodeURIComponent(p.name.substring(0, 20));
+        imageLoaded = true;
+        this.style.opacity = '1';
+      }
+    };
+    
+    // Set initial state for fade-in
+    img.style.opacity = '0';
+    img.style.transition = 'opacity 0.3s ease-in';
+    
+    // Start loading the image
+    img.src = p.image;
+    
+    // Check if image is already cached/loaded
+    if (img.complete && img.naturalHeight !== 0) {
+      img.style.opacity = '1';
+      imageLoaded = true;
+    }
+    
+    div.innerHTML = `<h3>${p.name}</h3><p>₹${p.price}</p><button onclick="addToCart(products.find(x=>x.id=='${p.id}'))">Add to Cart</button>`;
+    div.insertBefore(img, div.firstChild);
+    
+    container.appendChild(div);
+  });
+</script>
+<script src="adl-utils.js"></script>
+</body>
+</html>
