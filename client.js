@@ -1,12 +1,12 @@
 // Product catalog with working product image URLs
 // Using reliable image sources that will display correctly
 const products = [
-  {id:"1", name:"Classic Denim Jacket", category:"Jackets", brand:"Aurora", price:2499, image:"https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=600&h=800&fit=crop&auto=format"},
-  {id:"2", name:"Casual White Shirt", category:"Shirts", brand:"Aurora", price:1299, image:"https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=600&h=800&fit=crop&auto=format&q=80"},
-  {id:"3", name:"Summer Floral Dress", category:"Dresses", brand:"Aurora", price:1999, image:"https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&h=800&fit=crop&auto=format"},
-  {id:"4", name:"Formal Blazer", category:"Blazers", brand:"Aurora", price:3999, image:"https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=600&h=800&fit=crop&auto=format"},
-  {id:"5", name:"Black Skinny Jeans", category:"Jeans", brand:"Aurora", price:1799, image:"https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&h=800&fit=crop&auto=format"},
-  {id:"6", name:"Red Evening Gown", category:"Dresses", brand:"Aurora", price:4999, image:"https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=800&fit=crop&auto=format&q=80"}
+  {id:"1", name:"Classic Denim Jacket", category:"Jackets", brand:"Velora", price:2499, image:"https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=600&h=800&fit=crop&auto=format"},
+  {id:"2", name:"Casual White Shirt", category:"Shirts", brand:"Velora", price:1299, image:"https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=600&h=800&fit=crop&auto=format&q=80"},
+  {id:"3", name:"Summer Floral Dress", category:"Dresses", brand:"Velora", price:1999, image:"https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=600&h=800&fit=crop&auto=format"},
+  {id:"4", name:"Formal Blazer", category:"Blazers", brand:"Velora", price:3999, image:"https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=600&h=800&fit=crop&auto=format"},
+  {id:"5", name:"Black Skinny Jeans", category:"Jeans", brand:"Velora", price:1799, image:"https://images.unsplash.com/photo-1542272604-787c3835535d?w=600&h=800&fit=crop&auto=format"},
+  {id:"6", name:"Red Evening Gown", category:"Dresses", brand:"Velora", price:4999, image:"https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&h=800&fit=crop&auto=format&q=80"}
 ];
 
 // Cart state management - loads from localStorage and maintains in-memory state
@@ -447,34 +447,46 @@ function checkout() {
     return;
   }
   
-  // Generate order ID
+  // Generate unique order ID
   const orderId = "ORD" + Math.floor(Math.random() * 100000);
   
   // Calculate total revenue
   const revenue = getCartTotal();
   
+  // Create order object with full details
+  const order = {
+    id: orderId,
+    revenue: revenue,
+    products: cart.map(item => ({
+      productId: item.id,
+      productName: item.name,
+      productCategory: item.category,
+      brand: item.brand,
+      price: item.price,
+      quantity: item.qty
+    }))
+  };
+  
+  // Store order details in localStorage with key 'lastOrder'
+  try {
+    localStorage.setItem('lastOrder', JSON.stringify(order));
+  } catch (e) {
+    console.error('Error storing order in localStorage:', e);
+  }
+  
   // Push purchase event to Adobe Data Layer before clearing cart
   if (window.adobeDataLayer) {
     window.adobeDataLayer.push({
       event: "purchase",
-      eventInfo: { eventName: "purchase" },
+      eventInfo: { 
+        eventName: "purchase" 
+      },
       page: {
         pageName: "Checkout",
         pageType: "checkout",
         url: window.location.href
       },
-      order: {
-        id: orderId,
-        revenue: revenue,
-        products: cart.map(item => ({
-          productId: item.id,
-          productName: item.name,
-          productCategory: item.category,
-          brand: item.brand,
-          price: item.price,
-          quantity: item.qty
-        }))
-      },
+      order: order,
       cart: {
         items: cart.map(item => ({
           productId: item.id,
@@ -490,12 +502,9 @@ function checkout() {
     });
   }
   
-  // Clear cart
+  // Clear cart from localStorage and memory
   cart = [];
   saveCart();
-  
-  // Store order ID in sessionStorage to display on thank you page
-  sessionStorage.setItem('orderId', orderId);
   
   // Redirect to thank you page
   window.location.href = "thankyou.html";

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Aurora Apparel - Thank You</title>
+<title>Velora Boutique - Thank You</title>
 <link rel="stylesheet" href="styles.css">
 <script>
   window.adobeDataLayer = window.adobeDataLayer || [];
@@ -11,7 +11,7 @@
 </head>
 <body>
 <nav>
-  <h2>Aurora Apparel</h2>
+  <h2>Velora Boutique</h2>
   <div>
     <a href="index.html">Home</a>
     <a href="plp.html">Shop</a>
@@ -22,8 +22,10 @@
 <div class="container">
   <h2>Thank You for Your Order!</h2>
   <p>Your order has been placed successfully.</p>
-  <p>Order ID: <strong id="orderId"></strong></p>
-  <button onclick="window.location.href='index.html'">Back to Home</button>
+  <div id="orderDetails">
+    <p>Loading order details...</p>
+  </div>
+  <button onclick="window.location.href='index.html'" style="padding:10px 20px;background:#ff4081;color:white;border:none;cursor:pointer;border-radius:5px;font-size:16px;margin-top:20px;">Back to Home</button>
 </div>
 
 <script src="client.js"></script>
@@ -32,28 +34,83 @@
 // Initialize cart (should be empty after checkout)
 initCart();
 
-// Get order ID from sessionStorage (set during checkout) or generate a new one
-const orderId = sessionStorage.getItem('orderId') || "ORD" + Math.floor(Math.random() * 100000);
-document.getElementById('orderId').innerText = orderId;
+// Read order data from localStorage
+let order = null;
+try {
+  const lastOrderData = localStorage.getItem('lastOrder');
+  if (lastOrderData) {
+    order = JSON.parse(lastOrderData);
+  }
+} catch (e) {
+  console.error('Error reading order from localStorage:', e);
+}
 
-// Clear the order ID from sessionStorage after displaying
-sessionStorage.removeItem('orderId');
+const orderDetailsEl = document.getElementById('orderDetails');
 
-// Push purchase confirmation event if not already sent
-if (window.adobeDataLayer) {
-  window.adobeDataLayer.push({
-    event: "purchaseConfirmation",
-    eventInfo: { eventName: "purchaseConfirmation" },
-    page: {
-      pageName: "ThankYou",
-      pageType: "thankyou",
-      url: window.location.href
-    },
-    order: {
-      id: orderId
-    },
-    timestamp: new Date().toISOString()
-  });
+if (order && order.id) {
+  // Display order ID
+  let html = `<p><strong>Order ID:</strong> ${order.id}</p>`;
+  
+  // Display order products list
+  if (order.products && order.products.length > 0) {
+    html += '<h3>Order Items:</h3>';
+    html += '<ul style="list-style:none;padding:0;margin:20px 0;">';
+    
+    order.products.forEach((product, index) => {
+      const itemTotal = product.price * product.quantity;
+      html += `
+        <li style="background:white;padding:15px;margin:10px 0;border-radius:8px;box-shadow:0 1px 5px rgba(0,0,0,0.2);">
+          <strong>${index + 1}. ${product.productName}</strong><br>
+          <span>Category: ${product.productCategory}</span><br>
+          <span>Brand: ${product.brand}</span><br>
+          <span>Price: ₹${product.price} × Quantity: ${product.quantity} = ₹${itemTotal}</span>
+        </li>
+      `;
+    });
+    
+    html += '</ul>';
+  }
+  
+  // Display total revenue
+  html += `<p style="font-size:20px;font-weight:bold;margin-top:20px;padding:15px;background:#f0f0f0;border-radius:8px;">Total Revenue: ₹${order.revenue}</p>`;
+  
+  orderDetailsEl.innerHTML = html;
+  
+  // Push purchase confirmation event to Adobe Data Layer
+  if (window.adobeDataLayer) {
+    window.adobeDataLayer.push({
+      event: "purchaseConfirmation",
+      eventInfo: { 
+        eventName: "purchaseConfirmation" 
+      },
+      page: {
+        pageName: "ThankYou",
+        pageType: "thankyou",
+        url: window.location.href
+      },
+      order: order,
+      timestamp: new Date().toISOString()
+    });
+  }
+} else {
+  // No order found - show fallback message
+  orderDetailsEl.innerHTML = '<p>Order details not found. Please contact support if you have any questions.</p>';
+  
+  // Still push a confirmation event even if order data is missing
+  if (window.adobeDataLayer) {
+    window.adobeDataLayer.push({
+      event: "purchaseConfirmation",
+      eventInfo: { 
+        eventName: "purchaseConfirmation" 
+      },
+      page: {
+        pageName: "ThankYou",
+        pageType: "thankyou",
+        url: window.location.href
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
 }
 </script>
 </body>
